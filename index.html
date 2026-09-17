@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Алгоритм работы на 87</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-soft: #f6f7f9;
+    --text: #1a1a1a;
+    --text-soft: #555555;
+    --border: #e2e4e8;
+    --accent: #2f6fed;
+    --accent-soft: #eaf1ff;
+    --ok: #1f8a4c;
+    --ok-bg: #e9f7ee;
+    --bad: #c13c3c;
+    --bad-bg: #fbeaea;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161a;
+      --bg-soft: #1c1f24;
+      --text: #eaecef;
+      --text-soft: #a3a9b3;
+      --border: #2c2f35;
+      --accent: #6ea1ff;
+      --accent-soft: #1b2536;
+      --ok: #4fce87;
+      --ok-bg: #10261a;
+      --bad: #ec6b6b;
+      --bad-bg: #2c1414;
+      --card-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161a;
+    --bg-soft: #1c1f24;
+    --text: #eaecef;
+    --text-soft: #a3a9b3;
+    --border: #2c2f35;
+    --accent: #6ea1ff;
+    --accent-soft: #1b2536;
+    --ok: #4fce87;
+    --ok-bg: #10261a;
+    --bad: #ec6b6b;
+    --bad-bg: #2c1414;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height: 1.55;
+  }
+
+  .wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header.hero {
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+
+  .eyebrow {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-size: 28px;
+    margin: 0 0 10px;
+    line-height: 1.25;
+  }
+
+  .subtitle {
+    color: var(--text-soft);
+    font-size: 15px;
+    max-width: 640px;
+  }
+
+  .note {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 14px;
+    color: var(--text-soft);
+    margin-top: 18px;
+  }
+  .note b { color: var(--text); }
+
+  nav.toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 22px 0 36px;
+  }
+  nav.toc a {
+    font-size: 13px;
+    color: var(--text);
+    text-decoration: none;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  nav.toc a:hover { border-color: var(--accent); color: var(--accent); }
+
+  section {
+    margin-bottom: 44px;
+    scroll-margin-top: 16px;
+  }
+
+  .sec-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 13px;
+    margin-right: 10px;
+  }
+
+  h2 {
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    margin: 0 0 6px;
+  }
+
+  h2 .h2text { }
+
+  .sec-desc {
+    color: var(--text-soft);
+    font-size: 14px;
+    margin: 0 0 16px 38px;
+  }
+
+  h3 {
+    font-size: 15px;
+    margin: 20px 0 8px;
+    color: var(--text);
+  }
+
+  p { margin: 0 0 12px; }
+
+  ul, ol {
+    margin: 0 0 14px;
+    padding-left: 22px;
+  }
+  li { margin-bottom: 6px; }
+
+  .steps {
+    display: grid;
+    gap: 12px;
+  }
+  .step {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 12px;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .step .num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .step .step-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .step .step-body {
+    color: var(--text-soft);
+    font-size: 14px;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 640px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+
+  .col-card {
+    border-radius: 10px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+  }
+  .col-card.ok { background: var(--ok-bg); }
+  .col-card.bad { background: var(--bad-bg); }
+  .col-card h4 {
+    margin: 0 0 10px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .col-card.ok h4 { color: var(--ok); }
+  .col-card.bad h4 { color: var(--bad); }
+  .col-card ul { margin: 0; padding-left: 18px; }
+  .col-card li { font-size: 14px; margin-bottom: 8px; }
+
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    padding: 10px 14px;
+    border-radius: 0 8px 8px 0;
+    font-size: 14px;
+    margin: 14px 0;
+  }
+  .callout.warn {
+    border-left-color: var(--bad);
+    background: var(--bad-bg);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin: 12px 0;
+  }
+  .table-wrap { overflow-x: auto; }
+  th, td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th { color: var(--text-soft); font-weight: 600; font-size: 13px; }
+  code {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-size: 13px;
+  }
+
+  .cat-grid {
+    display: grid;
+    gap: 14px;
+  }
+  .cat {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .cat summary {
+    cursor: pointer;
+    padding: 12px 16px;
+    font-weight: 600;
+    background: var(--bg-soft);
+    list-style: none;
+  }
+  .cat summary::-webkit-details-marker { display: none; }
+  .cat summary::before {
+    content: "+ ";
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .cat[open] summary::before {
+    content: "- ";
+  }
+  .cat .cat-body {
+    padding: 14px 16px;
+  }
+  .cat-body .yes { color: var(--ok); }
+  .cat-body .no { color: var(--bad); }
+  .cat-body ul { margin: 0 0 10px; padding-left: 18px; }
+
+  .checklist {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 12px 0;
+  }
+  .checklist .item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    align-items: center;
+  }
+  .checklist .item:last-child { border-bottom: none; }
+  .tag {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .tag.against { background: var(--bad-bg); color: var(--bad); }
+  .tag.for { background: var(--ok-bg); color: var(--ok); }
+
+  .rule-box {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 14px;
+    margin: 14px 0;
+  }
+
+  .code-badge {
+    display: inline-block;
+    font-weight: 700;
+    font-size: 13px;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 8px;
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+    padding-top: 18px;
+    color: var(--text-soft);
+    font-size: 13px;
+  }
+
+  a.top {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">Заявки 86 / 87 - SFT Collection Video</div>
+    <h1>Алгоритм работы на 87</h1>
+    <p class="subtitle">Как искать и сдавать ссылки на видео. Пошаговая памятка для исполнителей: где искать, что проверять, как сдать ссылку без дублей. Проекты 86 и 87 работают по одному и тому же ТЗ.</p>
+    <div class="note">
+      Памятка составлена по ТЗ от 16.09.2026. Заказчик регулярно меняет приоритеты и требования, и эта памятка не заменяет ТЗ, а помогает быстрее в нем сориентироваться. Самая актуальная версия всегда лежит в TagMe - ее обязательно нужно изучить самостоятельно целиком, а не пролистать по диагонали. Если что-то в этой памятке разошлось с ТЗ в TagMe - ориентируйтесь на TagMe, и напишите об этом менеджеру проекта.
+    </div>
+  </header>
+
+  <nav class="toc">
+    <a href="#s01">01 Алгоритм работы</a>
+    <a href="#s02">02 Что это и зачем</a>
+    <a href="#s03">03 Требования к видео</a>
+    <a href="#s04">04 Как искать быстрее</a>
+    <a href="#s05">05 Что сейчас в приоритете</a>
+    <a href="#s06">06 Пикселизация и блочность</a>
+    <a href="#s07">07 Проверка на дубликаты</a>
+    <a href="#s08">08 Формат ссылки</a>
+    <a href="#s09">09 Причины отказа</a>
+  </nav>
+
+  <section id="s01">
+    <h2><span class="sec-num">01</span><span class="h2text">Алгоритм работы</span></h2>
+    <p class="sec-desc">Пять шагов от поиска видео до отправки ссылки в TagMe.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <div>
+          <div class="step-title">Найдите видео на YouTube</div>
+          <div class="step-body">Ищите с компьютера или ноутбука. С телефона и планшета сбор видео не ведем ни при каких условиях.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <div>
+          <div class="step-title">Просмотрите видео и оцените качество</div>
+          <div class="step-body">Длинное видео смотрите кусками по 5 минут. Если из 10 кусочков хотя бы 8 подходят под правила - видео можно брать. На спорных моментах включайте скорость 0.25x, так лучше видно блочность и мелкие артефакты.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <div>
+          <div class="step-title">Проверьте ссылку в Антидубли</div>
+          <div class="step-body">Через расширение или веб-приложение вставьте ссылку и нажмите "Проверить ссылку". Если ссылка уже есть в базе - берем другое видео.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">4</div>
+        <div>
+          <div class="step-title">Приведите ссылку к нужному формату</div>
+          <div class="step-body">Уберите из ссылки все лишнее: параметры плейлиста, метки времени и т.д. Оставьте только id видео.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">5</div>
+        <div>
+          <div class="step-title">Отправьте ссылку в TagMe</div>
+          <div class="step-body">Вставьте ссылку в поле, нажмите "Проверить ссылку". Если ссылки еще нет в базе - нажмите "Отправить" в правом верхнем углу. Не забудьте после этого нажать "Добавить в базу" в Антидубли.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <b>Важно.</b> Работа ведется только с компьютера или ноутбука. Поиск и сбор видео с телефона или планшета запрещен независимо от того, насколько удобно приложение видеохостинга на мобильном устройстве.
+    </div>
+
+    <div class="callout">
+      На 87 собираем только YouTube. VK в этот проект не входит - под ВКонтакте есть отдельный проект 88. Если хотите оказывать услуги по сбору VK вместо YouTube - напишите об этом менеджеру проекта.
+    </div>
+  </section>
+
+  <section id="s02">
+    <h2><span class="sec-num">02</span><span class="h2text">87 и 86 - что это и зачем</span></h2>
+    <p>87 и 86 - один и тот же проект по сути работы. Задания, ТЗ и стоимость услуг одинаковые.</p>
+    <h3>В чем разница</h3>
+    <ul>
+      <li>87 - стартовый проект: все новички начинают именно здесь, это не понижение и не временная мера для кого-то отдельного, так устроено для всех</li>
+      <li>На 87 заказчик проверяет результаты строже, чем на 86</li>
+      <li>Если стабильно качественно собираете на 87 - вас переводят на 86 без дополнительного экзамена</li>
+    </ul>
+  </section>
+
+  <section id="s03">
+    <h2><span class="sec-num">03</span><span class="h2text">Требования к видео</span></h2>
+    <p class="sec-desc">Базовые условия, без которых видео сразу отклоняется. Ниже - основные критерии из ТЗ, полный список с примерами смотрите в ТЗ на TagMe.</p>
+
+    <div class="two-col">
+      <div class="col-card ok">
+        <h4>Берем</h4>
+        <ul>
+          <li>Разрешение от 1080p и выше (по возможности смотрите в 4K, так виднее артефакты)</li>
+          <li>Целевой звук виден в кадре - источник звука присутствует в видеоряде</li>
+          <li>До 15 видео с одного канала. Больше - если это разные сюжеты и герои (не один и тот же скетчбук или один и тот же ракурс)</li>
+          <li>Разнообразные сочетания звука и темы: бытовые звуки, взаимодействие с предметами, речь с разной интонацией и громкостью</li>
+        </ul>
+      </div>
+      <div class="col-card bad">
+        <h4>Не берем</h4>
+        <ul>
+          <li>Видео, снятые нейросетью, и любые ИИ-генерации</li>
+          <li>Интервью, подкасты и другие "говорящие головы"</li>
+          <li>Категорию "приготовление пищи" (процесс готовки)</li>
+          <li>Танцевальные видео без целевого звука, где есть только фоновая музыка</li>
+          <li>Записи экрана, геймплей, стримы</li>
+          <li>Видео с одним действием дольше 15 минут</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>По звуку</h3>
+    <ul>
+      <li><b>В приоритете:</b> сцены с одушевленными и неодушевленными предметами, которые издают естественный звук без сильного шума на фоне (чистая речь, asmr, мяуканье кота)</li>
+      <li><b>В последнюю очередь:</b> сцены с сильным шумовым фоном или множеством источников звука</li>
+      <li><b>Не берем:</b> слишком громкий фоновый звук, "квадратный" или хриплый звук от перегрузки записи, металлический или "плавающий" призвук, робот-озвучку, рассинхрон видео и звука, дубляж с эхом или несовпадением с движением губ</li>
+    </ul>
+    <p>Закадровый голос и музыка допустимы, только если не перекрывают целевой звук. В приоритете видео без музыки и закадровой речи.</p>
+  </section>
+
+  <section id="s04">
+    <h2><span class="sec-num">04</span><span class="h2text">Как искать быстрее (для новичков)</span></h2>
+    <p class="sec-desc">Простые приемы, которые экономят время на поиске подходящих видео.</p>
+
+    <h3>Формулируйте запрос как объект + контекст + действие</h3>
+    <ul>
+      <li>Плохо: "телефон". Хорошо: "человек использует смартфон"</li>
+      <li>Плохо: "аквариум". Хорошо: "рыбы плавают стаей в аквариуме"</li>
+      <li>Плохо: "гитара". Хорошо: "уличный музыкант играет на гитаре"</li>
+    </ul>
+
+    <h3>Используйте фильтры YouTube после поиска</h3>
+    <ul>
+      <li>Фильтр по длительности - сразу отсекайте слишком короткие ролики и многочасовые стримы</li>
+      <li>Сортировка "по дате загрузки" помогает найти контент, который еще не разобрали другие исполнители</li>
+      <li>Фильтр "4K" в настройках качества плеера - быстрый способ проверить реальное разрешение ролика</li>
+    </ul>
+
+    <h3>Минус-слова отсекают мусор</h3>
+    <p>Добавляйте в запрос слово с минусом, чтобы убрать нежелательные форматы, например: <code>рыбы в аквариуме -shorts -реклама</code>. Так можно отфильтровать мукбанги, обзоры и рекламные ролики.</p>
+
+    <h3>Один хороший канал - несколько ссылок</h3>
+    <p>Если нашли канал с подходящим контентом, посмотрите его плейлисты и раздел "Похожие видео". Часто на одном канале можно набрать несколько разных сюжетов сразу (помните про лимит 15 видео с канала).</p>
+
+    <h3>Ищите на разных языках, не только на русском и английском</h3>
+    <p>Один и тот же запрос на разных языках дает совсем другую выборку каналов, сюжетов и качество съемки. Помимо английского пробуйте запросы на азиатских языках (китайский, японский, корейский, хинди) и других - там свои каналы и стиль съемки, которых почти нет в русском и английском поиске. Если тема "буксует" на одном языке - переключитесь на другой.</p>
+  </section>
+
+  <section id="s05">
+    <h2><span class="sec-num">05</span><span class="h2text">Что сейчас в приоритете</span></h2>
+    <p class="sec-desc">Заказчик регулярно меняет фокус по категориям. Актуальный список приоритетов - в ТЗ на TagMe, ниже - сокращенная выжимка по состоянию на 16.09.2026, чтобы сориентироваться. Перед стартом работы сверьтесь с TagMe: приоритеты могли уже смениться.</p>
+
+    <div class="callout">
+      Сейчас высокий приоритет: <b>видео с пением</b>. Ищем в первую очередь исполнителей, которые поют в кадре - на сцене, в студии, в формате караоке или уличного выступления. Важно, чтобы было видно лицо и само действие пения, а не просто человек рядом с микрофоном.
+    </div>
+
+    <div class="cat-grid">
+      <details class="cat">
+        <summary>Животные</summary>
+        <div class="cat-body">
+          <ul>
+            <li class="yes">Рыбы: море, реки, аквариум, кормление, стая</li>
+            <li class="no">Аквариум без явного животного</li>
+            <li class="yes">Насекомые крупным планом: сбор нектара, стройка муравейника, охота</li>
+            <li class="no">Макро, где не понятно, что это насекомое</li>
+            <li class="yes">Рептилии и земноводные: движение, охота, плавание</li>
+            <li class="yes">Действия, а не просто "стоит в кадре": ест, охотится, играет, взаимодействует с человеком</li>
+            <li class="no">Перекос в сторону птиц и обычных млекопитающих, нужно разнообразие</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="cat">
+        <summary>Музыка и пение</summary>
+        <div class="cat-body">
+          <ul>
+            <li class="yes">Жанры: хип-хоп, рэп, поп, рок, джаз, электроника, EDM</li>
+            <li class="yes">Концерт, студия, уличное выступление, игра на инструменте</li>
+            <li class="yes">Пение: сцена, караоке, репетиция, студия, хор</li>
+            <li class="no">Только красивые кадры инструмента без человека</li>
+            <li class="no">Клип, где человек занимает маленькую часть кадра</li>
+            <li class="no">Только классические оркестры</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="cat">
+        <summary>Люди, действия и диалоги</summary>
+        <div class="cat-body">
+          <ul>
+            <li class="yes">Повседневные действия: идет, работает руками, взаимодействует со средой</li>
+            <li class="yes">Спорт, танцы, ремонт, готовка (не еда), производство</li>
+            <li class="yes">Интервью, новости, лекции с динамичной съемкой (не статичная говорящая голова)</li>
+            <li class="no">Только говорящая голова на однотонном фоне</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="cat">
+        <summary>Природа</summary>
+        <div class="cat-body">
+          <ul>
+            <li class="yes">Дождь, снег, туман, гроза, сильный ветер - в приоритете</li>
+            <li class="yes">Пустыня, пещеры, ледники, океан, горы, болота</li>
+            <li class="yes">Движение воды, ветра, огня, листопад</li>
+            <li class="no">Только лес днем без динамики</li>
+            <li class="no">Турвидео, где человек - главный объект</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="cat">
+        <summary>Мультфильмы (анимация)</summary>
+        <div class="cat-body">
+          <ul>
+            <li class="yes">2D, аниме, stop-motion, рисованная и экспериментальная анимация</li>
+            <li class="no">Перекос в сторону 3D-CGI, его уже много</li>
+            <li class="no">Плоская 2D графика без теней и объема</li>
+            <li class="no">Насилие и вредные привычки в кадре</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="cat">
+        <summary>Техника, архитектура, интерьеры, транспорт</summary>
+        <div class="cat-body">
+          <ul>
+            <li class="yes">Техника в работе: смартфоны, роботы, дроны, станки, программирование</li>
+            <li class="no">Просто телефон лежит на столе</li>
+            <li class="yes">Архитектура: интерьеры зданий, проход по помещению, детали</li>
+            <li class="no">Только внешний вид здания без проходов внутрь</li>
+            <li class="yes">Интерьеры: офис, кафе, кухня, библиотека с фокусом на деталях</li>
+            <li class="no">Пустые однотипные комнаты</li>
+            <li class="yes">Транспорт в движении: маневры, вид из салона, разная погода</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <div class="rule-box">
+      <b>Общее правило для всех категорий:</b> собираем объект + контекст + действие, а не просто статичный объект в кадре.
+    </div>
+  </section>
+
+  <section id="s06">
+    <h2><span class="sec-num">06</span><span class="h2text">Пикселизация и блочность - строгий контроль</span></h2>
+    <p class="sec-desc">На заявках 86/87 это основная причина отказов. Проверяйте каждое спорное видео по чек-листам ниже. Чек-листы приведены из ТЗ дословно, но заказчик может уточнять формулировки - сверяйтесь с TagMe, если появились новые примеры в ОС.</p>
+
+    <h3>Чек-лист по пикселизации / полосам</h3>
+    <p class="sec-desc" style="margin-left:0;">Если большинство ответов "против" - отправляйте в битое. Если большинство "за" - берем.</p>
+    <div class="checklist">
+      <div class="item"><span>Степень критичности: дефект крупный, бросается в глаза сразу?</span><span class="tag against">против</span></div>
+      <div class="item"><span>Мелкий дефект, заметен только при внимательном рассмотрении?</span><span class="tag for">за</span></div>
+      <div class="item"><span>Расположение: дефект на главном объекте или важной части кадра?</span><span class="tag against">против</span></div>
+      <div class="item"><span>Дефект на второстепенном участке?</span><span class="tag for">за</span></div>
+      <div class="item"><span>Площадь: дефект занимает больше 20% кадра?</span><span class="tag against">против</span></div>
+      <div class="item"><span>Дефект занимает меньше 20% кадра?</span><span class="tag for">за</span></div>
+      <div class="item"><span>Контрастность: дефект ярко выделяется на фоне (яркие полосы, пятна)?</span><span class="tag against">против</span></div>
+      <div class="item"><span>Дефект сливается с близкими оттенками?</span><span class="tag for">за</span></div>
+      <div class="item"><span>Интенсивность: дефект активен на протяжении всего видео, сильно заметен?</span><span class="tag against">против</span></div>
+      <div class="item"><span>Дефект слабый, почти незаметен?</span><span class="tag for">за</span></div>
+    </div>
+
+    <h3>Чек-лист по блочности ("крупные квадраты")</h3>
+    <p class="sec-desc" style="margin-left:0;">Если блочность на главном объекте или рядом с ним - сразу против, дальше можно не проверять.</p>
+    <div class="checklist">
+      <div class="item"><span>Блоки по центру кадра?</span><span class="tag against">против</span></div>
+      <div class="item"><span>Блоки по углам кадра?</span><span class="tag for">за</span></div>
+      <div class="item"><span>Блоки контрастные по тону или цвету?</span><span class="tag against">против</span></div>
+      <div class="item"><span>Блоки близких оттенков?</span><span class="tag for">за</span></div>
+      <div class="item"><span>Занимают больше 5% кадра?</span><span class="tag against">против</span></div>
+      <div class="item"><span>Занимают меньше 5% кадра?</span><span class="tag for">за</span></div>
+      <div class="item"><span>Держатся на протяжении всего видео?</span><span class="tag against">против</span></div>
+      <div class="item"><span>Появляются и пропадают?</span><span class="tag for">за</span></div>
+      <div class="item"><span>Заметны сразу, без паузы?</span><span class="tag against">против</span></div>
+      <div class="item"><span>Видно только если поставить на паузу?</span><span class="tag for">за</span></div>
+    </div>
+
+    <div class="rule-box">
+      <b>Правило:</b> если из 5 пунктов ответили "против" на 3 и больше - видео не берем. Если "против" только 1-2 - берем. Размер блоков значения не имеет, важна их заметность и расположение.
+    </div>
+
+    <div class="callout">
+      Не путайте с шумом и зерном. Мелкая пиксельность, зерно и легкая ступенчатость сами по себе не критичны - это могут быть эффекты старой пленки или естественная текстура. Критична именно блочность крупными квадратами и явная потеря деталей на большой площади кадра.
+    </div>
+
+    <div class="callout" style="margin-top:14px;">
+      На спорных моментах включайте скорость 0.25x - на такой скорости лучше видна блочность и мелкие артефакты при движении объектов.
+    </div>
+  </section>
+
+  <section id="s07">
+    <h2><span class="sec-num">07</span><span class="h2text">Проверка на дубликаты (Антидубли)</span></h2>
+    <p>Зачем это нужно: на проекте одновременно работает большое количество исполнителей, без проверки разные люди соберут одно и то же, а дубли бьют по качеству и создают проблемы с заказчиком. Проверка занимает пару секунд - делайте ее всегда, для каждой ссылки.</p>
+
+    <div class="two-col">
+      <div class="col-card">
+        <h4>Вариант 1. Расширение для браузера</h4>
+        <ul>
+          <li>Работает в Chrome, Edge, Яндекс, Opera. Firefox не поддерживается</li>
+          <li>Установите расширение из Chrome Web Store и нажмите "Установить"</li>
+          <li>Закрепите его на панели: значок пазла в браузере -> найдите "Анти-дубли - Collection Video" -> нажмите булавку, чтобы иконка K была всегда под рукой</li>
+          <li>При первом запуске выберите свой проект и один раз впишите ФИО - дальше все запомнится само</li>
+        </ul>
+      </div>
+      <div class="col-card">
+        <h4>Вариант 2. Веб-приложение</h4>
+        <ul>
+          <li>Работает в любом браузере и на любом устройстве, включая Firefox, телефон и планшет. Устанавливать ничего не нужно</li>
+          <li>Ссылка: <code>antidupli-check.netlify.app</code>, удобно сохранить в закладки или на главный экран телефона</li>
+          <li>Так же, как и в расширении: один раз укажите ФИО и проект, дальше это не спросит снова</li>
+        </ul>
+      </div>
+    </div>
+
+    <p style="font-size:14px; color:var(--text-soft);">ФИО нужно только для спорных случаев - чтобы понять, кто и когда добавил ссылку в базу. На сам результат проверки "дубль / не дубль" оно не влияет.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <div>
+          <div class="step-title">Откройте видео и запустите проверку</div>
+          <div class="step-body">В расширении: откройте вкладку с видео, нажмите иконку K -> "Проверить открытую вкладку". В веб-приложении: скопируйте ссылку на видео и вставьте в поле "Ссылка на видео", нажмите "Проверить".</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <div>
+          <div class="step-title">Смотрите на результат</div>
+          <div class="step-body">"Дубль" - видео уже в базе, не берем, ищем другое. "Новое" - в базе нет, можно брать.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <div>
+          <div class="step-title">Скопируйте чистую ссылку кнопкой в инструменте</div>
+          <div class="step-body">Инструмент показывает ссылку в правильном формате, без лишних параметров и хвостов. В TagMe вставляйте именно ее, а не ссылку из адресной строки браузера.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">4</div>
+        <div>
+          <div class="step-title">Нажмите "Добавить в базу"</div>
+          <div class="step-body">Отдельное действие после проверки. Без него ссылка не попадет в общую базу, и другой исполнитель может собрать то же видео повторно, думая, что оно еще свободно.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <b>Частая ошибка новичков.</b> Проверили ссылку, отправили в TagMe, но забыли нажать "Добавить в базу". Ссылка не попадает в базу дублей, и по ней параллельно может работать кто-то еще.
+    </div>
+
+    <h3>Если инструмент говорит "не дубль", а TagMe пишет "дубль"</h3>
+    <p>Это не ошибка инструмента. Над проектом параллельно работают и другие компании-подрядчики. Наша база обновляется мгновенно, но видит только то, что добавили исполнители на нашей стороне. Общая база на стороне TagMe собирает данные от всех и обновляется примерно раз в сутки - поэтому свежий дубль от другой компании может не сразу быть виден у нас.</p>
+    <p>Что делать: отправлять эту же ссылку заново не нужно, просто возьмите другое видео.</p>
+
+    <div class="callout warn">
+      Не пропускайте проверку. Отправка ссылки в TagMe в обход антидублей считается нарушением - это видно по времени отправки и по базе. Систематические нарушения могут привести к временному отключению от проекта.
+    </div>
+  </section>
+
+  <section id="s08">
+    <h2><span class="sec-num">08</span><span class="h2text">Формат ссылки</span></h2>
+    <p>На 87 берем только YouTube. Перед отправкой убирайте из ссылки все лишнее - оставляйте только id видео.</p>
+
+    <div class="rule-box">
+      <b>YouTube:</b> <code>https://www.youtube.com/watch?v=hole0OlGR5k</code><br>
+      Если в ссылке есть метка времени вида <code>&t=32s</code> - удаляем ее, оставляем только <code>watch?v=...</code>
+    </div>
+
+    <div class="two-col">
+      <div class="col-card bad">
+        <h4>Не берем такие ссылки</h4>
+        <ul>
+          <li>Видео с интерфейсом другого видеохостинга (перезалитое со стороннего сайта)</li>
+          <li>YouTube Shorts, даже если ссылка на вид выглядит как обычное видео</li>
+        </ul>
+      </div>
+      <div class="col-card ok">
+        <h4>Проверяйте перед отправкой</h4>
+        <ul>
+          <li>Ссылка открывается и ведет на само видео, а не на Shorts или плейлист</li>
+          <li>В ссылке не осталось лишних параметров</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="s09">
+    <h2><span class="sec-num">09</span><span class="h2text">Расшифровка причин отклонения</span></h2>
+    <p class="sec-desc">Эти пометки увидите в обратной связи по видео.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Код</th><th>Значение</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="code-badge">ИИ</span></td><td>видео создано с помощью искусственного интеллекта</td></tr>
+          <tr><td><span class="code-badge">РАЗРЕШ</span></td><td>разрешение видео ниже, чем 1080p</td></tr>
+          <tr><td><span class="code-badge">ПКС</span></td><td>в видео замечена критичная пикселизация</td></tr>
+          <tr><td><span class="code-badge">БЛОКИ</span></td><td>в видео замечена блочность</td></tr>
+          <tr><td><span class="code-badge">ПСТ</span></td><td>в видео замечена постеризация</td></tr>
+          <tr><td><span class="code-badge">НК</span></td><td>низкая комплексность (пустой, однотонный фон более 50% кадра)</td></tr>
+          <tr><td><span class="code-badge">ВМ</span></td><td>вотермарка</td></tr>
+          <tr><td><span class="code-badge">АПП</span></td><td>артефакт переднего плана (сильно размытый передний план)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      Полное описание каждого критерия с примерами - в ТЗ по 86/87 на TagMe, это основной источник. Если пример из обратной связи не понятен - обращайтесь к менеджеру проекта, не додумывайте сами.
+    </div>
+  </section>
+
+  <footer>
+    Памятка составлена по ТЗ 86/87 от 16.09.2026, материалу с идеями для поиска, методичке для исполнителей и инструкции по расширению Антидубли. ТЗ в TagMe первично и обновляется чаще этой памятки - при расхождении ориентируйтесь на TagMe и сообщайте менеджеру проекта.
+    <div style="margin-top:14px;"><a class="top" href="#">Наверх</a></div>
+  </footer>
+
+</div>
+</body>
+</html>
