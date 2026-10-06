@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажер 86/87</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-soft: #f6f7f9;
+    --text: #1a1a1a;
+    --text-soft: #555555;
+    --border: #e2e4e8;
+    --accent: #2f6fed;
+    --accent-soft: #eaf1ff;
+    --ok: #1f8a4c;
+    --ok-bg: #e9f7ee;
+    --bad: #c13c3c;
+    --bad-bg: #fbeaea;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161a;
+      --bg-soft: #1c1f24;
+      --text: #eaecef;
+      --text-soft: #a3a9b3;
+      --border: #2c2f35;
+      --accent: #6ea1ff;
+      --accent-soft: #1b2536;
+      --ok: #4fce87;
+      --ok-bg: #10261a;
+      --bad: #ec6b6b;
+      --bad-bg: #2c1414;
+      --card-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161a;
+    --bg-soft: #1c1f24;
+    --text: #eaecef;
+    --text-soft: #a3a9b3;
+    --border: #2c2f35;
+    --accent: #6ea1ff;
+    --accent-soft: #1b2536;
+    --ok: #4fce87;
+    --ok-bg: #10261a;
+    --bad: #ec6b6b;
+    --bad-bg: #2c1414;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+
+
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; line-height:1.55; }
+  .wrap { max-width:860px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:28px; margin:0 0 6px; }
+  .subtitle { color:var(--text-soft); margin:0 0 18px; }
+  .note { background:var(--accent-soft); border-radius:10px; padding:14px 16px; font-size:14px; margin-bottom:22px; }
+  .note ol { margin:6px 0 0; padding-left:20px; }
+  .tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  .tab { border:1px solid var(--border); background:var(--bg-soft); color:var(--text); border-radius:999px; padding:8px 16px; font-size:15px; cursor:pointer; }
+  .tab[aria-selected="true"] { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .score { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; background:var(--bg-soft); border:1px solid var(--border); border-radius:10px; padding:12px 16px; margin-bottom:16px; position:sticky; top:0; z-index:5; }
+  .score b { font-size:18px; }
+  .btn-reset { border:1px solid var(--border); background:var(--bg); color:var(--text); border-radius:8px; padding:6px 12px; cursor:pointer; font-size:14px; }
+  .card { border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px; box-shadow:var(--card-shadow); background:var(--bg); }
+  .card-top { display:flex; justify-content:space-between; gap:10px; align-items:baseline; flex-wrap:wrap; }
+  .num { color:var(--text-soft); font-size:13px; }
+  .cat { font-weight:600; }
+  .link { display:inline-block; margin:6px 0 12px; color:var(--accent); word-break:break-all; font-size:14px; }
+  .actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .choice { flex:1 1 140px; border:1px solid var(--border); background:var(--bg-soft); color:var(--text); border-radius:8px; padding:10px; font-size:15px; cursor:pointer; }
+  .choice:disabled { cursor:default; opacity:.55; }
+  .choice.picked { opacity:1; outline:2px solid var(--text-soft); }
+  .answer { display:none; margin-top:12px; border-radius:8px; padding:12px 14px; font-size:14px; }
+  .answer.show { display:block; }
+  .answer.right { background:var(--ok-bg); border-left:4px solid var(--ok); }
+  .answer.wrong { background:var(--bad-bg); border-left:4px solid var(--bad); }
+  .verdict { font-weight:700; display:block; margin-bottom:4px; }
+  .card.right { border-color:var(--ok); }
+  .card.wrong { border-color:var(--bad); }
+  .done { display:none; border-radius:10px; padding:14px 16px; margin-top:8px; font-size:15px; }
+  .done.show { display:block; }
+  .done.good { background:var(--ok-bg); }
+  .done.bad { background:var(--bad-bg); }
+  footer { margin-top:30px; color:var(--text-soft); font-size:13px; }
+  footer a { color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Тренажер 86/87</h1>
+  <p class="subtitle">Видео, которые заказчик разобрал на вебинаре 02.10, с его вердиктами. Проверьте свой глаз до того, как отправлять ссылки.</p>
+  <div class="note">
+    <b>Как проходить</b>
+    <ol>
+      <li>Откройте видео, поставьте качество вручную на максимальное, не "Авто"</li>
+      <li>Проверьте по ТЗ и чек-листам: 10 фрагментов через равные промежутки, зоны риска на 0,25</li>
+      <li>Нажмите "Берем" или "Не берем" - откроется ответ заказчика с пояснением</li>
+      <li>Цель - 80% совпадений с заказчиком. Если меньше - пересмотрите запись вебинара и ошибки, затем пройдите заново</li>
+    </ol>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" data-tab="quality" aria-selected="true">Блоки и качество</button>
+    <button class="tab" data-tab="sound" aria-selected="false">Звук</button>
+    <button class="tab" data-tab="anim" aria-selected="false">Анимация</button>
+  </div>
+
+  <div class="score">
+    <div>Совпало с заказчиком: <b id="sc">0 из 0</b> <span id="left" class="num"></span></div>
+    <button class="btn-reset" id="reset">Начать вкладку заново</button>
+  </div>
+
+  <div id="list"></div>
+  <div class="done" id="done"></div>
+
+  <footer>
+    Ответы - из таблиц заказчика к вебинару 02.10 и ответов на ОС от 05.10. Правила - в ТЗ в TagMe и в <a href="https://fil322.github.io/86_87_helper">алгоритме работы на 87</a>. Чек-листы - в <a href="https://fil322.github.io/86_87_proverka-na-bitoe/">проверке на битое</a>.
+  </footer>
+</div>
+<script>
+(function(){
+  var DATA = {"quality": [{"cat": "Улица", "id": "7vubfusgtb8", "ok": true, "why": "Можно выделить сегменты без критичных артефактов - видео подходит (правило 20/80)."}, {"cat": "Улица", "id": "8TodPY8AKWo", "ok": false, "why": "Блочность на ГО (на жилетках, в тени на штанах) на протяжении всего видео. Также блоки на стене - даже без учета ГО не проходит по чек-листу."}, {"cat": "Улица", "id": "3e5uBlaiL5Q", "ok": false, "why": "Блочность на протяжении всего видео."}, {"cat": "Водоем", "id": "rLq69BZBP0U", "ok": false, "why": "Очень спорно: подходит максимум 1 сегмент с 2 до 4 секунды, где нет стоячей воды. Лучше не брать."}, {"cat": "Водоем", "id": "oYlkAVDxbck", "ok": false, "why": "Посекундное изменение качества, видно по левой стороне - критичное сжатие."}, {"cat": "Водоем", "id": "fNi-Yn3XBL8", "ok": true, "why": "Блоков нет, даже когда вода спокойная. Есть небольшие искажения (артефакты сжатия), мыльность и смазы - но именно блоков нет."}, {"cat": "Животное", "id": "jeUp4D5fZr4", "ok": false, "why": "Артефакт переднего плана: размытие до прозрачности больше 1-2% кадра - травинка слева и что-то белесое в правом углу."}, {"cat": "Животное", "id": "Adyyd-ljdVs", "ok": false, "why": "1 сцена - АПП и засвет больше 20%; 2 сцена - блочность не проходит по чек-листу; 3 сцена - блочность на ГО."}, {"cat": "Животное", "id": "9j-n6oKoa8o", "ok": true, "why": "Подходит по правилу 20/80: 80% видео - хорошие кадры. Важно: блоки на ГО в расфокусе тоже считаются, но здесь их меньше 20% времени."}, {"cat": "Змея", "id": "aEIL-h6uLDI", "ok": true, "why": "Можно выделить сегменты без критичных артефактов - видео подходит."}, {"cat": "Музыкальный инструмент", "id": "FyPohvmsnJs", "ok": false, "why": "Блочность в тенях на протяжении всего видео."}, {"cat": "Музыкальный инструмент", "id": "8yjyPPEXr_w", "ok": true, "why": "Можно выделить сегменты без критичных артефактов - видео подходит."}, {"cat": "Природа", "id": "Y1DiUw5cgHA", "ok": true, "why": "Можно выделить сегменты без критичных артефактов - видео подходит."}, {"cat": "Птица", "id": "oTNHa3RehEA", "ok": false, "why": "Блочность на перьях."}, {"cat": "Птица", "id": "6YThDHk_lPc", "ok": true, "why": "Можно выделить сегменты без критичных артефактов - видео подходит."}, {"cat": "Транспорт", "id": "yxpi1pHj3MM", "ok": false, "why": "Засвет до белого (на небе и объектах) практически 20% кадра - не подходит."}, {"cat": "Туман", "id": "7MPRjAC-RxQ", "ok": true, "why": "Можно выделить сегменты без критичных артефактов - видео подходит."}, {"cat": "Туман", "id": "UG844pcYcss", "ok": true, "why": "Можно выделить сегменты без критичных артефактов - видео подходит."}, {"cat": "Снег", "id": "51XYN2BQeGw", "ok": true, "why": "Можно выделить сегменты без критичных артефактов - видео подходит."}, {"cat": "Пение", "id": "70bDG3t8Md8", "ok": false, "why": "Блочность, которая не проходит по чек-листу."}, {"cat": "Пение", "id": "duObLKpkQJc", "ok": false, "why": "Блочность на коже девушки, особенно на плечах. Блоки есть и на гитаре - предмете, с которым взаимодействует ГО."}], "sound": [{"cat": "Макросъемка насекомых", "id": "-sxnse06Jvo", "ok": false, "why": "Макросъемка - музыки быть не должно. Нужно шуршание, звуки фона или тишина. При таком ракурсе шебуршание было бы немного слышно - звук не подходит."}, {"cat": "Насекомые", "id": "nuxeNqzK-jI", "ok": false, "why": "Видно ветер - его должно быть слышно. Звук поедания мухи должен соответствовать самому близкому ракурсу в видео."}, {"cat": "Бабочка у воды", "id": "z3R3A2ojL0E", "ok": true, "why": "Ценные кадры при хорошем качестве - можно без целевого звука или с наложенным фоном (не больше 10% от вашего сбора). Бабочка звуков не издает, музыка оправдана."}, {"cat": "Макросъемка", "id": "rAhU1aKGuro", "ok": true, "why": "Нет звука, но кадр интересный - можно по исключению для макро. Не больше 10% от вашего сбора."}, {"cat": "Вода, съемка с увеличением", "id": "HAKOqDLogr4", "ok": false, "why": "Где есть вода - ее должно быть слышно. Расстояние до камеры неважно, даже при сильном увеличении: если бы мы видели это глазами на таком расстоянии, мы бы услышали звук. Плюс первый фрагмент замедлен, а звук нет - это артефакт."}, {"cat": "Птицы на воде", "id": "zOEesz1TwDQ", "ok": false, "why": "Птицы вблизи плывут и чистят перья - должен быть звук. С 0:42 (утка) должно быть слышно воду, на 1:28 хлопанье крыльев перекрывает музыка. Не все моменты сняты издалека."}], "anim": [{"cat": "Анимация", "id": "PATkvvCfuVI", "ok": false, "why": "Волк стоит на двух ногах и ведет себя как человек."}, {"cat": "Анимация", "id": "nvMYALGvnXo", "ok": true, "why": "Конь говорит, но стоит на четырех ногах - подходит. Обратите внимание: на 0:52 осел стоит на задних ногах."}, {"cat": "Анимация", "id": "1dvCzMkU3lQ", "ok": true, "why": "Хорошая анимация."}, {"cat": "Анимация", "id": "i570TDr_W5Q", "ok": true, "why": "Хорошая анимация."}, {"cat": "Анимация", "id": "3fAfrNvIwMk", "ok": true, "why": "Хорошая анимация."}, {"cat": "Анимация", "id": "OoEU8GnGlcU", "ok": true, "why": "Хорошая анимация."}, {"cat": "Анимация", "id": "t5khm-VjEu4", "ok": false, "why": "На 0:40 кажется, что это обычная птица, а не фантастическое существо - такие зубы неанатомичны. На 1:07 у птицы пальцы."}, {"cat": "Анимация", "id": "Guxx_KTm_6M", "ok": true, "why": "Хорошая анимация."}, {"cat": "Анимация", "id": "if15SYD1Gv4", "ok": true, "why": "Хорошая анимация."}, {"cat": "Анимация", "id": "EBAd-FA5KSk", "ok": true, "why": "Хорошая анимация."}, {"cat": "Анимация", "id": "GLC6hriAsWQ", "ok": true, "why": "Хорошая анимация."}, {"cat": "Анимация", "id": "PD7Cr0XCaqc", "ok": true, "why": "Хорошая анимация."}, {"cat": "Анимация", "id": "LDT--4pqtqs", "ok": true, "why": "Хорошая анимация."}, {"cat": "Анимация", "id": "THs9ECU_oU8", "ok": true, "why": "Хорошая анимация."}, {"cat": "Анимация", "id": "a5Ez66nVKms", "ok": true, "why": "Хорошая анимация."}, {"cat": "Анимация", "id": "cZ0J93CGqU4", "ok": true, "why": "Хорошая анимация."}, {"cat": "Анимация", "id": "2kJrJeuMBDY", "ok": true, "why": "Хорошая анимация."}, {"cat": "Анимация", "id": "dmXnqfYQ7ig", "ok": true, "why": "Хорошая анимация."}]};
+  var active = 'quality';
+  var picks = { quality:{}, sound:{}, anim:{} };
+  var list = document.getElementById('list');
+  function url(id){ return 'https://www.youtube.com/watch?v=' + id; }
+  function render(){
+    list.innerHTML = '';
+    DATA[active].forEach(function(q, i){
+      var p = picks[active][i];
+      var card = document.createElement('div');
+      card.className = 'card' + (p === undefined ? '' : (p === q.ok ? ' right' : ' wrong'));
+      card.innerHTML =
+        '<div class="card-top"><span class="cat"></span><span class="num">' + (i+1) + ' из ' + DATA[active].length + '</span></div>' +
+        '<a class="link" target="_blank" rel="noopener"></a>' +
+        '<div class="actions"><button class="choice" data-v="1">Берем</button><button class="choice" data-v="0">Не берем</button></div>' +
+        '<div class="answer"><span class="verdict"></span><span class="why"></span></div>';
+      card.querySelector('.cat').textContent = q.cat;
+      var a = card.querySelector('.link'); a.href = url(q.id); a.textContent = url(q.id);
+      var ans = card.querySelector('.answer');
+      card.querySelectorAll('.choice').forEach(function(b){
+        var v = b.getAttribute('data-v') === '1';
+        if (p !== undefined){ b.disabled = true; if (v === p) b.classList.add('picked'); }
+        b.addEventListener('click', function(){ picks[active][i] = v; render(); });
+      });
+      if (p !== undefined){
+        ans.classList.add('show', p === q.ok ? 'right' : 'wrong');
+        ans.querySelector('.verdict').textContent = (p === q.ok ? 'Верно. ' : 'Не совпало. ') + 'Заказчик: ' + (q.ok ? 'берем' : 'не берем');
+        ans.querySelector('.why').textContent = q.why;
+      }
+      list.appendChild(card);
+    });
+    score();
+  }
+  function score(){
+    var total = DATA[active].length, answered = 0, right = 0;
+    DATA[active].forEach(function(q, i){
+      var p = picks[active][i];
+      if (p !== undefined){ answered++; if (p === q.ok) right++; }
+    });
+    document.getElementById('sc').textContent = right + ' из ' + answered;
+    document.getElementById('left').textContent = answered < total ? '· осталось ' + (total - answered) : '';
+    var done = document.getElementById('done');
+    done.className = 'done';
+    if (answered === total){
+      var pct = Math.round(right / total * 100);
+      done.classList.add('show', pct >= 80 ? 'good' : 'bad');
+      done.textContent = pct >= 80
+        ? 'Итог: ' + pct + '% совпадений. Хороший результат - ваш взгляд близок к взгляду заказчика.'
+        : 'Итог: ' + pct + '% совпадений. Пересмотрите видео, где не совпало, и запись вебинара, затем пройдите вкладку заново.';
+    }
+  }
+  document.querySelectorAll('.tab').forEach(function(t){
+    t.addEventListener('click', function(){
+      active = t.getAttribute('data-tab');
+      document.querySelectorAll('.tab').forEach(function(x){ x.setAttribute('aria-selected', x === t ? 'true' : 'false'); });
+      render();
+    });
+  });
+  document.getElementById('reset').addEventListener('click', function(){ picks[active] = {}; render(); window.scrollTo(0,0); });
+  render();
+})();
+</script>
+</body>
+</html>
